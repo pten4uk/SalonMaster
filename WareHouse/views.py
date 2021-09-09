@@ -1,26 +1,31 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
 
+from .filters import MaterialFilter
 from .forms import *
 from .models import Material
-from .utils import MaterialDataMixin
 
 
-class MaterialList(MaterialDataMixin, ListView):
+class MaterialList(ListView):
+    model = Material
+    context_object_name = 'materials'
+    template_name = 'WareHouse/material_list.html'
+    paginate_by = 30
+    ordering = ['number__name']
+
+    def get_filter(self):
+        return MaterialFilter(self.request.GET, queryset=super().get_queryset().select_related('category', 'number'))
+
     def get_queryset(self):
-        return Material.objects.order_by('pk').select_related('category', 'number')
+        return self.get_filter().qs
 
-
-class MaterialCategory(MaterialDataMixin, ListView):
-    def get_queryset(self):
-        return Material.objects.order_by('pk').filter(
-            category__pk=self.kwargs['pk']).select_related('category', 'number')
-
-    def dispatch(self, request, *args, **kwargs):
-        if 'category' in self.request.GET:
-            cat_pk = self.request.GET['category']
-            return redirect(f'/warehouse/filter/category/{cat_pk}')
-        return super().dispatch(request, *args, **kwargs)
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['filter'] = self.get_filter()
+        if self.request.GET:
+            for key, value in self.request.GET.items():
+                context[key] = value
+        return context
 
 
 class MaterialCreate(CreateView):
@@ -60,7 +65,13 @@ def incoming(request, pk):
         'material': material,
     }
     if request.method == 'POST':
-        quantity = int(request.POST['quantity'])
-        material.add_material(quantity)
+        packages = 0
+        quantity = 0
+        if request.POST['quantity']:
+            quantity = int(request.POST['quantity'])
+        if request.POST['packages']:
+            packages = int(request.POST['packages'])
+        material.add_material(packages, quantity)
+
         return redirect('/warehouse/')
     return render(request, 'WareHouse/material_incoming.html', context=context)

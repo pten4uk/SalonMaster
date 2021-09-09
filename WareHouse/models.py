@@ -8,21 +8,21 @@ class Material(models.Model):
     ]
     brand = models.CharField('Бренд', max_length=32, choices=BRANDS, default='Matrix')
     category = models.ForeignKey('Category', on_delete=models.CASCADE, verbose_name='Категория')
-    number = models.ForeignKey('Number', max_length=256, on_delete=models.CASCADE)
+    number = models.ForeignKey('Number', max_length=256, on_delete=models.CASCADE, verbose_name='Номер')
     volume = models.PositiveSmallIntegerField('Объем', default=0)
     quantity = models.PositiveSmallIntegerField('Количество', default=0)
     tracked = models.BooleanField('Отслеживаемость', default=False)
 
-    def add_material(self, quantity):
-        self.quantity += quantity * self.volume
+    def add_material(self, packages, quantity):
+        self.quantity += packages * self.volume + quantity
         self.tracked = True
         self.save()
 
     def expense(self, quantity):
         if self.quantity >= quantity:
-            self.quantity -= quantity
             if self.quantity == quantity:
                 self.tracked = False
+            self.quantity -= quantity
             self.save()
         return self.quantity
 

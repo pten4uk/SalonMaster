@@ -4,9 +4,8 @@
 <h1>{{ material }}:</h1>
 <form method="post">
     {% csrf_token %}
-    <p>Укажите количество материала в упаковках, которое нужно добавить на склад:</p>
-    {{ form.quantity }}
-    <input type="submit" value="Применить">
+    <p>Укажите количество материала, которое нужно добавить на склад:</p>
+    <p>Упаковок: {{ form.packages }} Грамм: {{ form.quantity }} <input type="submit" value="Применить"></p>
 </form>
 
 

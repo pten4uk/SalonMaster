@@ -58,7 +58,7 @@ def start():
                     break
             if not exists:
                 mat.save()
-                print(f'Добавлен материал')
+                print(f'Добавлен материал {mat}')
 
 
 class Command(BaseCommand):
