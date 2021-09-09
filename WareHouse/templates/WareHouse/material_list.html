@@ -1,0 +1,27 @@
+{% extends 'WareHouse/base.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block content %}
+<h3>Количество материалов: {% counted_objects request %}</h3>
+{% include 'WareHouse/paginator.html' %}
+
+{% if materials %}
+    {% for material in materials %}
+        <ul>
+            <li><h2>{{ material.number }}</h2>
+                <p><b>Объём: {{ material.volume }} гр.(мл.)</b></p>
+                <p><b>Категория: {{ material.category.name }}</b></p>
+                <p>Количество: {{ material.quantity|divider:material.volume }} уп., {{ material.quantity|reminder:material.volume }} ед.</p>
+                <button><a href="{% url 'expense' material.id %}">Расход</a></button>
+                <button><a href="{% url 'incoming' material.id %}">Добавить</a></button>
+            </li>
+        </ul>
+    {% endfor %}
+{% else %}
+<h2>Материалы отсутствуют</h2>
+{% endif %}
+
+{% include 'WareHouse/paginator.html' %}
+
+{% endblock content %}

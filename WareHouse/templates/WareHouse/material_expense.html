@@ -1,0 +1,14 @@
+{% extends 'WareHouse/base.html' %}
+
+{% block content %}
+<h1>{{ material }}:</h1>
+<form method="post">
+    {% csrf_token %}
+    <p>Укажите количество израсходованного материала в граммах:</p>
+    <p>{{ form.quantity }}</p>
+    <p>{{ form.error }}</p>
+    <input type="submit" value="Применить">
+</form>
+
+
+{% endblock content %}
