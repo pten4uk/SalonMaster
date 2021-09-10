@@ -1,3 +1,4 @@
+from django.contrib.auth import logout
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
 
@@ -22,6 +23,7 @@ class MaterialList(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['filter'] = self.get_filter()
+        context['is_admin'] = self.request.user.groups.filter(name='admins').exists()
         if self.request.GET:
             for key, value in self.request.GET.items():
                 context[key] = value

@@ -10,7 +10,7 @@
         </form>
 
 <h3>Количество материалов: {{ filter.qs|length }}</h3>
-{% include 'WareHouse/paginator.html' %}
+{% include 'paginator.html' %}
 
 {% if materials %}
     {% for material in materials %}
@@ -29,6 +29,6 @@
 <h2>Материалы отсутствуют</h2>
 {% endif %}
 
-{% include 'WareHouse/paginator.html' %}
+{% include 'paginator.html' %}
 
 {% endblock content %}

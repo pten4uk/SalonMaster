@@ -9,12 +9,19 @@
     <title>Document</title>
 </head>
 <body>
+{% if is_admin %}
+    <h1>Режим администрирования <button><a href="{% url 'logout' %}">Выйти</a></button></h1>
+{% endif %}
 <nav>
     <h1>
-        <ul>
-    <li><a href="{% url 'home' %}">Все материалы</a></li>
-    <li><a href="{% url 'create' %}">Добавить новый материал</a></li>
-        </ul>
+        <a href="{% url 'home' %}">Каталог</a> |
+
+        {% if is_admin %}
+        <a href="{% url 'create' %}">Добавить новый материал</a> |
+        {% endif %}
+        {% if not request.user.is_authenticated %}
+        <button><a href="{% url 'login' %}">Войти</a></button>
+        {% endif %}
     </h1>
 </nav>
 {% block content %}
