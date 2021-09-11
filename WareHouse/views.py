@@ -1,4 +1,5 @@
 from django.contrib.auth import logout
+from django.http import Http404
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
 
@@ -55,7 +56,7 @@ def expense(request, pk):
             form.error = f'Нельзя израсходовать больше материала, чем имеется ({material.quantity}).'
             return render(request, 'WareHouse/material_expense.html', context=context)
 
-        return redirect('/warehouse/')
+        return redirect(f'/warehouse/?number={material.number.name.split()[0]}')
     return render(request, 'WareHouse/material_expense.html', context=context)
 
 
@@ -75,5 +76,23 @@ def incoming(request, pk):
             packages = int(request.POST['packages'])
         material.add_material(packages, quantity)
 
-        return redirect('/warehouse/')
+        return redirect(f'/warehouse/?number={material.number.name.split()[0]}')
     return render(request, 'WareHouse/material_incoming.html', context=context)
+
+
+def delete(request, pk):
+    if not request.user.groups.filter(name='admins').exists():
+        raise Http404()
+    print(pk)
+    material = Material.objects.select_related('category').get(pk=pk)
+    context = {
+        'material': material
+    }
+    return render(request, 'WareHouse/material_delete.html', context=context)
+
+
+def delete_confirm(request, pk):
+    if not request.user.groups.filter(name='admins').exists():
+        raise Http404()
+    Material.objects.get(pk=pk).delete()
+    return redirect('/warehouse/')
