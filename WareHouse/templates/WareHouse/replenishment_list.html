@@ -1,0 +1,13 @@
+{% extends 'WareHouse/base.html' %}
+
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% favorites as favorites %}
+
+{% block content %}
+<h3>Количество материалов: {{ materials|length }}</h3>
+
+{% include 'WareHouse/template_particles/material_template.html' %}
+
+{% endblock content %}

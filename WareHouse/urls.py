@@ -16,4 +16,9 @@ urlpatterns = [
     path('<int:pk>/expense/', expense, name='expense'),
     path('<int:pk>/incoming/', incoming, name='incoming'),
 
+    path('needs_replenishment/', get_replenishment, name='replenishment'),
+    path('favorites/', get_favorites, name='favorites'),
+    path('<int:pk>/add_to_favorites', add_to_favorites, name='add_to_favorites'),
+    path('<int:pk>/del_from_favorites', del_from_favorites, name='del_from_favorites'),
+
 ]

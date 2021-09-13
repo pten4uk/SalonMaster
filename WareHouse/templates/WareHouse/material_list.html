@@ -1,4 +1,5 @@
 {% extends 'WareHouse/base.html' %}
+
 {% load custom_filters %}
 {% load custom_tags %}
 
@@ -10,26 +11,10 @@
         </form>
 
 <h3>Количество материалов: {{ filter.qs|length }}</h3>
+
 {% include 'paginator.html' %}
 
-{% if materials %}
-    {% for material in materials %}
-        <ul>
-            <li><h2>{{ material.number }}</h2>
-                <p><b>Объём: {{ material.volume }} гр.(мл.)</b></p>
-                <p><b>Категория: {{ material.category.name }}</b></p>
-                <p>Количество: {{ material.quantity|divider:material.volume }} шт., {{ material.quantity|reminder:material.volume }} гр.</p>
-                <button><a href="{% url 'expense' material.id %}">Расход</a></button>
-                <button><a href="{% url 'incoming' material.id %}">Добавить</a></button>
-                {% if is_admin %}
-                <button><a href="{% url 'delete' material.id %}">Удалить</a></button>
-                {% endif %}
-            </li>
-        </ul>
-    {% endfor %}
-{% else %}
-<h2>Материалы отсутствуют</h2>
-{% endif %}
+{% include 'WareHouse/template_particles/material_template.html' %}
 
 {% include 'paginator.html' %}
 

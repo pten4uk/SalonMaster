@@ -1,0 +1,8 @@
+{% extends 'WareHouse/base.html' %}
+
+{% block content %}
+<h3>Количество материалов: {{ materials|length }}</h3>
+
+{% include 'WareHouse/template_particles/material_template.html' %}
+
+{% endblock content %}

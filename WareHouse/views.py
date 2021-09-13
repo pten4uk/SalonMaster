@@ -1,11 +1,15 @@
-from django.contrib.auth import logout
-from django.http import Http404
+import json
+import os
+
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
 
 from .filters import MaterialFilter
 from .forms import *
 from .models import Material
+from .utils import is_admin
 
 
 class MaterialList(ListView):
@@ -24,7 +28,6 @@ class MaterialList(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['filter'] = self.get_filter()
-        context['is_admin'] = self.request.user.groups.filter(name='admins').exists()
         if self.request.GET:
             for key, value in self.request.GET.items():
                 context[key] = value
@@ -37,6 +40,7 @@ class MaterialCreate(CreateView):
     success_url = '/warehouse/'
 
 
+# --------------------------------------definitions-------------------------------------------
 def expense(request, pk):
     material = Material.objects.get(pk=pk)
     form = UpdateForm()
@@ -60,6 +64,7 @@ def expense(request, pk):
     return render(request, 'WareHouse/material_expense.html', context=context)
 
 
+# ---------------------------------------------incoming-expense-----------------------------------------------
 def incoming(request, pk):
     material = Material.objects.get(pk=pk)
     form = UpdateForm()
@@ -80,19 +85,79 @@ def incoming(request, pk):
     return render(request, 'WareHouse/material_incoming.html', context=context)
 
 
+@is_admin
 def delete(request, pk):
-    if not request.user.groups.filter(name='admins').exists():
-        raise Http404()
-    print(pk)
     material = Material.objects.select_related('category').get(pk=pk)
     context = {
         'material': material
     }
     return render(request, 'WareHouse/material_delete.html', context=context)
 
+# ---------------------------------------------incoming-expense-----------------------------------------------
+# -----------------------------------------confirmations----------------------------------------------
 
+
+@is_admin
 def delete_confirm(request, pk):
-    if not request.user.groups.filter(name='admins').exists():
-        raise Http404()
     Material.objects.get(pk=pk).delete()
     return redirect('/warehouse/')
+
+# -----------------------------------------confirmations----------------------------------------------
+# ---------------------------------------------------replenishment----------------------------------------------
+
+
+@is_admin
+def get_replenishment(request):
+    materials = []
+    get_mats = Material.objects.select_related('number', 'category').all()
+    for mat in get_mats:
+        if mat.tracked:
+            if mat.quantity / mat.volume < 2:
+                materials.append(mat)
+    return render(request, 'WareHouse/replenishment_list.html', {'materials': materials})
+
+
+@is_admin
+def get_favorites(request):
+    if os.path.exists('WareHouse/temporary/favorites.json'):
+        with open('WareHouse/temporary/favorites.json') as f:
+            pks = json.load(f)
+    get_mats = Material.objects.select_related('number', 'category').filter(pk__in=pks)
+    return render(request, 'WareHouse/replenishment_list.html', {'materials': get_mats})
+
+
+@is_admin
+def add_to_favorites(request, pk):
+
+    if not os.path.exists('WareHouse/temporary/favorites.json'):
+        pks = []
+        pks.append(int(pk))
+        with open('WareHouse/temporary/favorites.json', 'w') as f:
+            json.dump(pks, f, indent=4)
+    else:
+        with open('WareHouse/temporary/favorites.json') as f:
+            pks = json.load(f)
+        if int(pk) not in pks:
+            pks.append(int(pk))
+        with open('WareHouse/temporary/favorites.json', 'w') as f:
+            json.dump(pks, f, indent=4)
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+@is_admin
+def del_from_favorites(request, pk):
+    if not os.path.exists('WareHouse/temporary/favorites.json'):
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+    with open('WareHouse/temporary/favorites.json') as f:
+        pks = json.load(f)
+    for i, primary in enumerate(pks):
+        if primary == int(pk):
+            pks.pop(i)
+    with open('WareHouse/temporary/favorites.json', 'w') as f:
+        json.dump(pks, f, indent=4)
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+# ---------------------------------------------------replenishment----------------------------------------------
