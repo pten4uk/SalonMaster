@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django_filters',
     'debug_toolbar',
 
-    'WareHouse.apps.WarehouseConfig'
+    'WareHouse.apps.WarehouseConfig',
 ]
 
 MIDDLEWARE = [
