@@ -26,6 +26,9 @@ class Material(models.Model):
             self.save()
         return self.quantity
 
+    def needs_replenishment(self):
+        return self.tracked and (self.quantity / self.volume < 2)
+
     def __str__(self):
         return f'{self.number}'
 
@@ -38,7 +41,7 @@ class Category(models.Model):
 
 
 class Number(models.Model):
-    name = models.CharField('Идентификатор', max_length=256)
+    name = models.CharField('Идентификатор', max_length=256, unique=True)
 
     def __str__(self):
         return f'{self.name}'

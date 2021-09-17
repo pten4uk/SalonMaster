@@ -10,8 +10,11 @@
             <input type="submit" value="Найти">
         </form>
 
-<h3>Количество материалов: {{ filter.qs|length }}</h3>
-
+<h3>Количество материалов: {{ queryset|length }}</h3>
+<p>{% if materials_exists %}
+<button><a href="{% url 'clean_favorites' %}">Очистить список</a></button>
+{% endif %}
+</p>
 {% include 'paginator.html' %}
 
 {% include 'WareHouse/template_particles/material_template.html' %}

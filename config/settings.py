@@ -137,3 +137,5 @@ INTERNAL_IPS = [
 
 LOGIN_REDIRECT_URL = '/warehouse/'
 LOGOUT_REDIRECT_URL = '/warehouse/'
+
+SESSION_COOKIE_AGE = 10 * 60

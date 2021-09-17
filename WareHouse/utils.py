@@ -1,6 +1,9 @@
 from django.http import Http404
 from functools import wraps
 
+from .filters import MaterialFilter
+from .models import Material
+
 
 def is_admin(view):
     @wraps(view)
@@ -9,4 +12,24 @@ def is_admin(view):
             raise Http404()
         return view(request, *args, **kwargs)
     return wrapper
+
+
+class DataListMixin:
+    model = Material
+    context_object_name = 'materials'
+    template_name = 'WareHouse/material_list.html'
+    ordering = ['number__name']
+
+    def get_filter(self):
+        return MaterialFilter(self.request.GET, queryset=super().get_queryset().select_related('category', 'number'))
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['filter'] = self.get_filter()
+        context['queryset'] = self.object_list
+        if self.request.GET:
+            for key, value in self.request.GET.items():
+                context[key] = value
+        return context
+
 

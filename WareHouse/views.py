@@ -1,35 +1,59 @@
 import json
 import os
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
 
-from .filters import MaterialFilter
 from .forms import *
 from .models import Material
-from .utils import is_admin
+from .utils import is_admin, DataListMixin
 
 
-class MaterialList(ListView):
-    model = Material
-    context_object_name = 'materials'
-    template_name = 'WareHouse/material_list.html'
+class MaterialList(DataListMixin, ListView):
     paginate_by = 30
-    ordering = ['number__name']
-
-    def get_filter(self):
-        return MaterialFilter(self.request.GET, queryset=super().get_queryset().select_related('category', 'number'))
 
     def get_queryset(self):
         return self.get_filter().qs
 
+
+class ReplenishmentList(DataListMixin, ListView):
+    paginate_by = 15
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='admins').exists():
+            return redirect('/warehouse/login/')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        materials = []
+        get_mats = self.get_filter().qs
+        for mat in get_mats:
+            if mat.needs_replenishment():
+                    materials.append(mat)
+        return materials
+
+
+class FavoriteList(DataListMixin, ListView):
+    paginate_by = 15
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='admins').exists():
+            return redirect('/warehouse/login/')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        pks = []
+        if os.path.exists('WareHouse/temporary/favorites.json'):
+            with open('WareHouse/temporary/favorites.json') as f:
+                pks = json.load(f)
+        get_mats = Material.objects.select_related('number', 'category').filter(pk__in=pks)
+        return get_mats
+
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['filter'] = self.get_filter()
-        if self.request.GET:
-            for key, value in self.request.GET.items():
-                context[key] = value
+        context['materials_exists'] = True if self.object_list else False
         return context
 
 
@@ -101,28 +125,14 @@ def delete_confirm(request, pk):
     Material.objects.get(pk=pk).delete()
     return redirect('/warehouse/')
 
+
+@is_admin
+def clean_favorites(request):
+    os.remove('WareHouse/temporary/favorites.json')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
 # -----------------------------------------confirmations----------------------------------------------
 # ---------------------------------------------------replenishment----------------------------------------------
-
-
-@is_admin
-def get_replenishment(request):
-    materials = []
-    get_mats = Material.objects.select_related('number', 'category').all()
-    for mat in get_mats:
-        if mat.tracked:
-            if mat.quantity / mat.volume < 2:
-                materials.append(mat)
-    return render(request, 'WareHouse/replenishment_list.html', {'materials': materials})
-
-
-@is_admin
-def get_favorites(request):
-    if os.path.exists('WareHouse/temporary/favorites.json'):
-        with open('WareHouse/temporary/favorites.json') as f:
-            pks = json.load(f)
-    get_mats = Material.objects.select_related('number', 'category').filter(pk__in=pks)
-    return render(request, 'WareHouse/replenishment_list.html', {'materials': get_mats})
 
 
 @is_admin

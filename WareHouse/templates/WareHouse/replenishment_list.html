@@ -6,7 +6,7 @@
 {% favorites as favorites %}
 
 {% block content %}
-<h3>Количество материалов: {{ materials|length }}</h3>
+<h3>Количество материалов: {{ filter.qs|length }}</h3>
 
 {% include 'WareHouse/template_particles/material_template.html' %}
 
