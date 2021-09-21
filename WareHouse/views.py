@@ -1,9 +1,8 @@
 import json
 import os
 
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
 
 from .forms import *
@@ -61,6 +60,8 @@ class MaterialCreate(CreateView):
     template_name = 'WareHouse/material_create.html'
     form_class = MaterialForm
     success_url = '/warehouse/'
+
+
 
 
 # --------------------------------------definitions-------------------------------------------

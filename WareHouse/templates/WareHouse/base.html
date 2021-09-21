@@ -1,6 +1,4 @@
 {% load custom_tags %}
-{% is_admin request as is_admin %}
-<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,20 +8,22 @@
     <title>Document</title>
 </head>
 <body>
-{% if is_admin %}
-    <h1>Режим администрирования <button><a href="{% url 'logout' %}">Выйти</a></button></h1>
+{% if request.user.is_staff %}
+    <h1>Режим администрирования</h1>
 {% endif %}
 <nav>
     <h1>
         <a href="{% url 'home' %}">Каталог</a> |
 
-        {% if is_admin %}
+        {% if request.user.is_staff %}
         <a href="{% url 'create' %}">Добавить новый материал</a> |
         <a href="{% url 'replenishment' %}">Пополнить запас</a> |
         <a href="{% url 'favorites' %}">Избранное</a> |
         {% endif %}
         {% if not request.user.is_authenticated %}
         <button><a href="{% url 'login' %}">Войти</a></button>
+        {% else %}
+        <button><a href="{% url 'logout' %}">Выйти</a></button>
         {% endif %}
     </h1>
 </nav>
