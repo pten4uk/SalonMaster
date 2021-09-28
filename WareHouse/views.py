@@ -14,7 +14,9 @@ class MaterialList(DataListMixin, ListView):
     paginate_by = 30
 
     def get_queryset(self):
-        return self.get_filter().qs
+        get_mats = self.get_filter().qs
+        materials = [] + list(get_mats)
+        return materials
 
 
 class ReplenishmentList(DataListMixin, ListView):
@@ -30,7 +32,7 @@ class ReplenishmentList(DataListMixin, ListView):
         get_mats = self.get_filter().qs
         for mat in get_mats:
             if mat.needs_replenishment():
-                    materials.append(mat)
+                materials.append(mat)
         return materials
 
 
@@ -48,7 +50,8 @@ class FavoriteList(DataListMixin, ListView):
             with open('WareHouse/temporary/favorites.json') as f:
                 pks = json.load(f)
         get_mats = Material.objects.select_related('number', 'category').filter(pk__in=pks)
-        return get_mats
+        materials = [] + list(get_mats)
+        return materials
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -60,8 +63,6 @@ class MaterialCreate(CreateView):
     template_name = 'WareHouse/material_create.html'
     form_class = MaterialForm
     success_url = '/warehouse/'
-
-
 
 
 # --------------------------------------definitions-------------------------------------------
@@ -117,6 +118,7 @@ def delete(request, pk):
     }
     return render(request, 'WareHouse/material_delete.html', context=context)
 
+
 # ---------------------------------------------incoming-expense-----------------------------------------------
 # -----------------------------------------confirmations----------------------------------------------
 
@@ -132,13 +134,13 @@ def clean_favorites(request):
     os.remove('WareHouse/temporary/favorites.json')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
+
 # -----------------------------------------confirmations----------------------------------------------
 # ---------------------------------------------------replenishment----------------------------------------------
 
 
 @is_admin
 def add_to_favorites(request, pk):
-
     if not os.path.exists('WareHouse/temporary/favorites.json'):
         pks = []
         pks.append(int(pk))
