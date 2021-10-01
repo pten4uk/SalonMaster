@@ -22,4 +22,8 @@ urlpatterns = [
     path('<int:pk>/add_to_favorites', add_to_favorites, name='add_to_favorites'),
     path('<int:pk>/del_from_favorites', del_from_favorites, name='del_from_favorites'),
 
+    path('nontracked/', NonTrackedList.as_view(), name='nontracked'),
+    path('<int:pk>/set_nontracked', set_nontracked, name='set_nontracked'),
+    path('<int:pk>/set_tracked', set_tracked, name='set_tracked'),
+
 ]

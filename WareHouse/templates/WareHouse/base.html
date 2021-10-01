@@ -19,6 +19,7 @@
         <a href="{% url 'create' %}">Добавить новый материал</a> |
         <a href="{% url 'replenishment' %}">Пополнить запас</a> |
         <a href="{% url 'favorites' %}">Избранное</a> |
+        <a href="{% url 'nontracked' %}">Не отслеживаемые</a> |
         {% endif %}
         {% if not request.user.is_authenticated %}
         <button><a href="{% url 'login' %}">Войти</a></button>
