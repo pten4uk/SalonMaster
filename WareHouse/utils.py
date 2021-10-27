@@ -1,7 +1,6 @@
 from django.http import Http404
 from functools import wraps
 
-from django.shortcuts import redirect
 
 from .filters import MaterialFilter
 from .models import Material
@@ -21,11 +20,6 @@ class DataListMixin:
     context_object_name = 'materials'
     template_name = 'WareHouse/material_list.html'
     ordering = ['number__name']
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='admins').exists():
-            return redirect('/warehouse/login/')
-        return super().dispatch(request, *args, **kwargs)
 
     def get_filter(self):
         return MaterialFilter(self.request.GET,

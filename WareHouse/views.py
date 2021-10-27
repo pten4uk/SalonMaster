@@ -22,6 +22,11 @@ class MaterialList(DataListMixin, ListView):
 class ReplenishmentList(DataListMixin, ListView):
     paginate_by = 15
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='admins').exists():
+            return redirect('/warehouse/login/')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         materials = []
         get_mats = self.get_filter().qs
@@ -31,9 +36,7 @@ class ReplenishmentList(DataListMixin, ListView):
         return materials
 
 
-class FavoriteList(DataListMixin, ListView):
-    paginate_by = 15
-
+class FavoriteList(ReplenishmentList):
     def get_queryset(self):
         pks = []
         if os.path.exists('WareHouse/temporary/favorites.json'):
@@ -54,6 +57,11 @@ class NonTrackedList(FavoriteList):
         get_mats = Material.objects.select_related('number', 'category').filter(tracked=False)
         materials = [] + list(get_mats)
         return materials
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['materials_exists'] = False
+        return context
 
 
 class MaterialCreate(CreateView):
@@ -151,7 +159,6 @@ def set_tracked(request, pk):
 # ---------------------------------------------------replenishment----------------------------------------------
 
 
-@is_admin
 def add_to_favorites(request, pk):
     if not os.path.exists('WareHouse/temporary/favorites.json'):
         pks = []
@@ -169,7 +176,6 @@ def add_to_favorites(request, pk):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
-@is_admin
 def del_from_favorites(request, pk):
     if not os.path.exists('WareHouse/temporary/favorites.json'):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

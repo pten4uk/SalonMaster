@@ -12,18 +12,18 @@
                 <p>Количество: {{ material.quantity|divider:material.volume }} шт., {{ material.quantity|reminder:material.volume }} гр.</p>
                 <button><a href="{% url 'expense' material.id %}">Расход</a></button>
                 <button><a href="{% url 'incoming' material.id %}">Добавить</a></button>
-                {% if request.user.is_staff %}
-                    <button><a href="{% url 'delete' material.id %}">Удалить</a></button>
-                    {% if material.pk in favorites %}
+                {% if material.pk in favorites %}
                         <button><a href="{% url 'del_from_favorites' material.id %}">Убрать из избранного</a></button>
                     {% else %}
                         <button><a href="{% url 'add_to_favorites' material.id %}">Добавить в избранное</a></button>
+                {% endif %}
+                {% if request.user.is_staff %}
                     {% if material.tracked %}
                         <button><a href="{% url 'set_nontracked' material.id %}">Перестать отслеживать</a></button>
                     {% else %}
                         <button><a href="{% url 'set_tracked' material.id %}">Отслеживать</a></button>
                     {% endif %}
-                    {% endif %}
+                    <button><a href="{% url 'delete' material.id %}">Удалить</a></button>
                 {% endif %}
             </li>
         </ul>
