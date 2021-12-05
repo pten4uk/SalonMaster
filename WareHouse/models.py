@@ -20,8 +20,6 @@ class Material(models.Model):
 
     def expense(self, quantity):
         if self.quantity >= quantity:
-            if self.quantity == quantity:
-                self.tracked = False
             self.quantity -= quantity
             self.save()
         return self.quantity

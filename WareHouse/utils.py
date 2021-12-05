@@ -23,7 +23,7 @@ class DataListMixin:
 
     def get_filter(self):
         return MaterialFilter(self.request.GET,
-                              queryset=super().get_queryset().select_related('category', 'number').filter(tracked=True))
+                              queryset=super().get_queryset().select_related('category', 'number'))
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

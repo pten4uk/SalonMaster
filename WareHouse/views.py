@@ -14,7 +14,7 @@ class MaterialList(DataListMixin, ListView):
     paginate_by = 30
 
     def get_queryset(self):
-        get_mats = self.get_filter().qs
+        get_mats = self.get_filter().qs.filter(tracked=True)
         materials = [] + list(get_mats)
         return materials
 
@@ -42,7 +42,7 @@ class FavoriteList(ReplenishmentList):
         if os.path.exists('WareHouse/temporary/favorites.json'):
             with open('WareHouse/temporary/favorites.json') as f:
                 pks = json.load(f)
-        get_mats = Material.objects.select_related('number', 'category').filter(pk__in=pks, tracked=True)
+        get_mats = self.get_filter().qs.select_related('number', 'category').filter(pk__in=pks, tracked=True)
         materials = [] + list(get_mats)
         return materials
 
@@ -54,7 +54,7 @@ class FavoriteList(ReplenishmentList):
 
 class NonTrackedList(FavoriteList):
     def get_queryset(self):
-        get_mats = Material.objects.select_related('number', 'category').filter(tracked=False)
+        get_mats = self.get_filter().qs.select_related('number', 'category').filter(tracked=False)
         materials = [] + list(get_mats)
         return materials
 
@@ -90,7 +90,7 @@ def expense(request, pk):
             form.error = f'Нельзя израсходовать больше материала, чем имеется ({material.quantity}).'
             return render(request, 'WareHouse/material_expense.html', context=context)
 
-        return redirect(f'/warehouse/?number={material.number.name.split()[0]}')
+        return redirect(f'/warehouse/?number={material.number.name.split()[0]}&category={material.category.pk}')
     return render(request, 'WareHouse/material_expense.html', context=context)
 
 
@@ -111,7 +111,7 @@ def incoming(request, pk):
             packages = int(request.POST['packages'])
         material.add_material(packages, quantity)
 
-        return redirect(f'/warehouse/?number={material.number.name.split()[0]}')
+        return redirect(f'/warehouse/?number={material.number.name.split()[0]}&category={material.category.pk}')
     return render(request, 'WareHouse/material_incoming.html', context=context)
 
 
